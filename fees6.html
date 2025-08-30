@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>ONE DAY VS TWO DAYS — BREAK-EVEN AND P&L (CSE)</title>
+  
+  <style>
+    :root {
+      --bg-primary: #f7fafc;
+      --bg-secondary: #f3f8ff;
+      --surface: #ffffff;
+      --surface-subtle: #eef3fb;
+      --text-primary: #0f172a;
+      --text-muted: #64748b;
+      --text-subtle: #475569;
+      --text-light: #6b7280;
+      --border: #e5e7eb;
+      --success: #065f46;
+      --danger: #b91c1c;
+      --neutral: #334155;
+      --breakeven: #0891b2;
+      
+      --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
+      --gradient-panel: linear-gradient(180deg, rgba(196,181,253,0.22), rgba(56,189,248,0.18));
+      --shadow-strong: 0 8px 24px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-medium: 0 6px 18px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-soft: 0 2px 6px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      font-size: clamp(13px, 1.5vw, 16px);
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text-primary);
+      background: 
+        radial-gradient(600px 300px at 10% -5%, rgba(14,165,233,0.08), transparent 50%),
+        radial-gradient(700px 350px at 90% 0%, rgba(16,185,129,0.08), transparent 55%),
+        linear-gradient(180deg, var(--bg-secondary), var(--bg-primary));
+      min-height: 100vh;
+      font-family: var(--font-ui);
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: min(98vw, 1200px);
+      margin: 0 auto;
+      padding: clamp(12px, 2.5vw, 20px);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: clamp(12px, 2vw, 16px);
+      flex-shrink: 0;
+    }
+
+    .title {
+      font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    .designer {
+      font-size: clamp(0.7rem, 1.2vw, 0.8rem);
+      color: #1f2937;
+      white-space: nowrap;
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(12px, 2vw, 16px);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: clamp(14px, 2.5vw, 18px);
+      box-shadow: var(--shadow-strong);
+    }
+
+    .card--panel {
+      background: var(--gradient-panel), var(--surface);
+      backdrop-filter: blur(2px);
+    }
+
+    .section-title {
+      font-weight: 700;
+      margin: 0 0 clamp(8px, 1.5vw, 10px) 0;
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      letter-spacing: 0.1px;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: clamp(12px, 2.5vw, 16px);
+    }
+
+    .input-field {
+      margin-bottom: 4px;
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 4px;
+      color: #0b1320;
+      font-size: clamp(0.7rem, 1.5vw, 0.8rem);
+      font-weight: 600;
+    }
+
+    .input {
+      width: 100%;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+      outline: none;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: clamp(12px, 2.5vw, 16px);
+    }
+
+    @media (min-width: 768px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+      margin-bottom: 4px;
+    }
+
+    .metric {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #f8fafc;
+      padding: 10px;
+      box-shadow: var(--shadow-medium);
+      text-align: center;
+    }
+
+    .metric__label {
+      font-size: clamp(0.65rem, 1.5vw, 0.75rem);
+      color: var(--text-primary);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .metric__value {
+      font-weight: 600;
+      font-size: clamp(0.9rem, 2vw, 1rem);
+      font-family: var(--font-ui);
+      font-variant-numeric: tabular-nums;
+      color: var(--breakeven);
+    }
+
+    .kv-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .kv-row:last-child { border-bottom: 0; }
+
+    .kv-row__key {
+      font-size: clamp(0.7rem, 1.6vw, 0.8rem);
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    .kv-row__value {
+      font-size: clamp(0.8rem, 1.8vw, 0.95rem);
+      font-weight: 600;
+      font-family: var(--font-ui);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      color: var(--text-light);
+    }
+
+    .kv-row--dark .kv-row__key {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .kv-row--dark .kv-row__value {
+      color: var(--text-primary);
+      font-weight: 800;
+    }
+
+    .kv-row--rates .kv-row__key {
+      font-size: clamp(0.6rem, 1.4vw, 0.7rem);
+      font-weight: 500;
+      color: var(--text-subtle);
+    }
+
+    .kv-row--rates .kv-row__value {
+      font-size: clamp(0.65rem, 1.5vw, 0.75rem);
+      font-weight: 600;
+      color: var(--text-subtle);
+    }
+
+    .value--negative { color: var(--danger); }
+
+    .kv-row--profit .kv-row__key {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .kv-row--profit .kv-row__value {
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    .kv-row--profit .kv-row__value--positive { color: var(--success); }
+    .kv-row--profit .kv-row__value--negative { color: var(--danger); }
+    .kv-row--profit .kv-row__value--neutral { color: var(--text-primary); }
+
+    .total-bar {
+      margin-top: 10px;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-weight: 800;
+      position: relative;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-medium);
+    }
+
+    .total-bar::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      box-shadow: 
+        inset 0 1px 0 rgba(255,255,255,0.6),
+        inset 0 -1px 0 rgba(0,0,0,0.05);
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+    .total-bar__label {
+      font-size: clamp(0.7rem, 1.6vw, 0.8rem);
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .total-bar__value {
+      font-size: clamp(1rem, 2.2vw, 1.1rem);
+      font-family: var(--font-ui);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .total-bar--positive {
+      background: linear-gradient(180deg, rgba(16,185,129,0.2), rgba(16,185,129,0.3));
+      color: var(--success);
+      border-color: #10b981;
+      box-shadow: 0 0 0 1px rgba(16,185,129,0.4) inset, var(--shadow-medium);
+    }
+
+    .total-bar--negative {
+      background: linear-gradient(180deg, rgba(239,68,68,0.2), rgba(239,68,68,0.3));
+      color: #7f1d1d;
+      border-color: #f87171;
+      box-shadow: 0 0 0 1px rgba(239,68,68,0.4) inset, var(--shadow-medium);
+    }
+
+    .total-bar--neutral {
+      background: #f1f5f9;
+      color: var(--neutral);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: clamp(0.6rem, 1.4vw, 0.7rem);
+      font-family: var(--font-ui);
+      font-variant-numeric: tabular-nums;
+      border: 1px solid #e2e8f0;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .badge--positive {
+      background: #dcfce7;
+      color: var(--success);
+      border-color: #86efac;
+    }
+
+    .badge--negative {
+      background: #fee2e2;
+      color: #7f1d1d;
+      border-color: #fecaca;
+    }
+
+    .badge--neutral {
+      background: #f1f5f9;
+      color: var(--neutral);
+      border-color: #e2e8f0;
+    }
+
+    .disclaimer {
+      color: var(--text-subtle);
+      font-size: clamp(0.6rem, 1.3vw, 0.7rem);
+      margin-top: auto;
+      padding-top: clamp(12px, 2.5vw, 16px);
+      font-weight: 500;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 480px) {
+      .title { font-size: 1rem; }
+      .designer { display: none; }
+      .input-row { grid-template-columns: 1fr; }
+      .input-field { margin-bottom: 8px; }
+    }
+
+    @media (min-width: 1400px) {
+      .container { max-width: 1400px; }
+      .grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header class="header">
+      <h1 class="title">ONE DAY VS TWO DAYS — BREAK-EVEN AND P&L</h1>
+      <div class="designer">Design by : Sugath Siriwardana • Asha Securities Ltd</div>
+    </header>
+
+    <main class="main-content">
+      <section class="card">
+        <h2 class="section-title">Inputs</h2>
+        <div class="input-row">
+          <div class="input-field">
+            <label for="buyPx" class="label">Buy price/share (LKR)</label>
+            <input id="buyPx" type="number" step="0.01" inputmode="decimal" autocomplete="off" placeholder="e.g. 125.50" class="input" />
+          </div>
+          <div class="input-field">
+            <label for="qty" class="label">Quantity (shares)</label>
+            <input id="qty" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 20,000" class="input" />
+          </div>
+          <div class="input-field">
+            <label for="sellPx" class="label">Sell price/share (LKR)</label>
+            <input id="sellPx" type="number" step="0.01" inputmode="decimal" autocomplete="off" placeholder="e.g. 130.00" class="input" />
+          </div>
+        </div>
+      </section>
+
+      <div class="grid">
+        <section class="card card--panel">
+          <h2 class="section-title">One Day</h2>
+          
+          <div class="metrics">
+            <div class="metric">
+              <div class="metric__label">Break-even px/share</div>
+              <div class="metric__value" id="be1">—</div>
+            </div>
+            <div class="metric">
+              <div class="metric__label">P&L per share</div>
+              <div class="metric__value"><span id="pl1" class="badge badge--neutral">—</span></div>
+            </div>
+          </div>
+
+          <div class="kv-row kv-row--rates">
+            <div class="kv-row__key">Side rates used</div>
+            <div class="kv-row__value" id="od_rates">—</div>
+          </div>
+
+          <div class="kv-row kv-row--dark">
+            <div class="kv-row__key">Buy amount</div>
+            <div class="kv-row__value" id="od_b_c">—</div>
+          </div>
+
+          <div class="kv-row kv-row--dark">
+            <div class="kv-row__key">Sell amount</div>
+            <div class="kv-row__value" id="od_s_c">—</div>
+          </div>
+
+          <div class="kv-row kv-row--profit">
+            <div class="kv-row__key" id="od_s_delta_lbl">—</div>
+            <div class="kv-row__value" id="od_s_delta">—</div>
+          </div>
+
+          <div class="kv-row kv-row--dark">
+            <div class="kv-row__key">Brokerage fees</div>
+            <div class="kv-row__value value--negative" id="od_s_f">—</div>
+          </div>
+
+          <div class="kv-row kv-row--dark">
+            <div class="kv-row__key">Net amount</div>
+            <div class="kv-row__value" id="od_s_n">—</div>
+          </div>
+
+          <div id="od_total" class="total-bar total-bar--neutral">
+            <span class="total-bar__label">P&L total</span>
+            <span class="total-bar__value" id="od_total_val">—</span>
+          </div>
+        </section>
+
+        <section class="card card--panel">
+          <h2 class="section-title">Two Days</h2>
+          
+          <div class="metrics">
+            <div class="metric">
+              <div class="metric__label">Break-even px/share</div>
+              <div class="metric__value" id="be2">—</div>
+            </div>
+            <div class="metric">
+              <div class="metric__label">P&L per share</div>
+              <div class="metric__value"><span id="pl2" class="badge badge--neutral">—</span></div>
+            </div>
+          </div>
+
+          <div class="kv-row kv-row--rates">
+            <div class="kv-row__key">Side rates used</div>
+            <div class="kv-row__value" id="td_rates">—</div>
+          </div>
+
+          <div class="kv-row kv-row--dark">
+            <div class="kv-row__key">Buy amount</div>
+            <div class="kv-row__value" id="td_b_c">—</div>
+          </div>
+
+          <div class="kv-row kv-row--dark">
+            <div class="kv-row__key">Sell amount</div>
+            <div class="kv-row__value" id="td_s_c">—</div>
+          </div>
+
+          <div class="kv-row kv-row--profit">
+            <div class="kv-row__key" id="td_s_delta_lbl">—</div>
+            <div class="kv-row__value" id="td_s_delta">—</div>
+          </div>
+
+          <div class="kv-row kv-row--dark">
+            <div class="kv-row__key">Brokerage fees</div>
+            <div class="kv-row__value value--negative" id="td_s_f">—</div>
+          </div>
+
+          <div class="kv-row kv-row--dark">
+            <div class="kv-row__key">Net amount</div>
+            <div class="kv-row__value" id="td_s_n">—</div>
+          </div>
+
+          <div id="td_total" class="total-bar total-bar--neutral">
+            <span class="total-bar__label">P&L total</span>
+            <span class="total-bar__value" id="td_total_val">—</span>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="disclaimer">
+      Disclaimer: For information and education only; no warranties or liability—please verify fees and results before acting.
+    </footer>
+  </div>
+
+  <script>
+    const RATES = {
+      ONE_DAY_HIGH: 1.1200,
+      ONE_DAY_LOW: 0.3000,
+      TWO_DAY: 1.1200
+    };
+
+    const parseNumber = (value) => {
+      if (value === undefined || value === null) return NaN;
+      return Number(String(value).trim().replace(/,/g, '.'));
+    };
+
+    const formatMoney = (number) => {
+      return isFinite(number) 
+        ? number.toLocaleString('en-LK', {maximumFractionDigits: 2, minimumFractionDigits: 2})
+        : '—';
+    };
+
+    const formatQuantity = () => {
+      const raw = qtyInput.value.replace(/,/g, '').replace(/[^\d]/g, '');
+      if (!raw) {
+        qtyInput.value = '';
+        return;
+      }
+      const number = Number(raw);
+      qtyInput.value = isFinite(number) ? number.toLocaleString('en-LK') : '';
+    };
+
+    const buyPxInput = document.getElementById('buyPx');
+    const qtyInput = document.getElementById('qty');
+    const sellPxInput = document.getElementById('sellPx');
+
+    const oneDayElements = {
+      breakeven: document.getElementById('be1'),
+      badge: document.getElementById('pl1'),
+      rates: document.getElementById('od_rates'),
+      buyAmount: document.getElementById('od_b_c'),
+      sellAmount: document.getElementById('od_s_c'),
+      deltaLabel: document.getElementById('od_s_delta_lbl'),
+      deltaValue: document.getElementById('od_s_delta'),
+      fees: document.getElementById('od_s_f'),
+      netAmount: document.getElementById('od_s_n'),
+      total: document.getElementById('od_total'),
+      totalValue: document.getElementById('od_total_val')
+    };
+
+    const twoDayElements = {
+      breakeven: document.getElementById('be2'),
+      badge: document.getElementById('pl2'),
+      rates: document.getElementById('td_rates'),
+      buyAmount: document.getElementById('td_b_c'),
+      sellAmount: document.getElementById('td_s_c'),
+      deltaLabel: document.getElementById('td_s_delta_lbl'),
+      deltaValue: document.getElementById('td_s_delta'),
+      fees: document.getElementById('td_s_f'),
+      netAmount: document.getElementById('td_s_n'),
+      total: document.getElementById('td_total'),
+      totalValue: document.getElementById('td_total_val')
+    };
+
+    const calculateOneDayBreakeven = (buyConsideration, quantity) => {
+      if (!(buyConsideration > 0 && quantity > 0)) return NaN;
+      
+      const sellHighScenario = buyConsideration * (1 + RATES.ONE_DAY_LOW / 100) / (1 - RATES.ONE_DAY_HIGH / 100);
+      const buyHighScenario = buyConsideration * (1 + RATES.ONE_DAY_HIGH / 100) / (1 - RATES.ONE_DAY_LOW / 100);
+      
+      const sellHighValid = sellHighScenario >= buyConsideration;
+      const buyHighValid = buyHighScenario < buyConsideration;
+      
+      let sellConsideration;
+      if (sellHighValid && !buyHighValid) {
+        sellConsideration = sellHighScenario;
+      } else if (buyHighValid && !sellHighValid) {
+        sellConsideration = buyHighScenario;
+      } else {
+        const sellDiff = Math.abs(sellHighScenario - buyConsideration);
+        const buyDiff = Math.abs(buyHighScenario - buyConsideration);
+        sellConsideration = sellDiff <= buyDiff ? sellHighScenario : buyHighScenario;
+      }
+      
+      return sellConsideration / quantity;
+    };
+
+    const updateProfitLoss = (labelElement, valueElement, difference) => {
+      if (!isFinite(difference)) {
+        labelElement.textContent = '—';
+        valueElement.textContent = '—';
+        valueElement.className = 'kv-row__value';
+        return;
+      }
+
+      if (difference > 0) {
+        labelElement.textContent = 'Profit';
+        valueElement.textContent = `+${formatMoney(difference)}`;
+        valueElement.className = 'kv-row__value kv-row__value--positive';
+      } else if (difference < 0) {
+        labelElement.textContent = 'Loss';
+        valueElement.textContent = `${formatMoney(difference)}`;
+        valueElement.className = 'kv-row__value kv-row__value--negative';
+      } else {
+        labelElement.textContent = 'Break-even';
+        valueElement.textContent = '0.00';
+        valueElement.className = 'kv-row__value kv-row__value--neutral';
+      }
+    };
+
+    const calculate = () => {
+      const buyPrice = parseNumber(buyPxInput.value);
+      const quantity = Number(String(qtyInput.value).replace(/,/g, ''));
+      const sellPrice = parseNumber(sellPxInput.value);
+
+      if (!(buyPrice > 0) || !(quantity > 0)) {
+        [oneDayElements.breakeven, oneDayElements.rates, oneDayElements.buyAmount, oneDayElements.sellAmount, 
+         oneDayElements.deltaLabel, oneDayElements.deltaValue, oneDayElements.fees, oneDayElements.netAmount, oneDayElements.totalValue,
+         twoDayElements.breakeven, twoDayElements.rates, twoDayElements.buyAmount, twoDayElements.sellAmount,
+         twoDayElements.deltaLabel, twoDayElements.deltaValue, twoDayElements.fees, twoDayElements.netAmount, twoDayElements.totalValue].forEach(el => {
+          if (el) el.textContent = '—';
+        });
+        
+        oneDayElements.badge.className = 'badge badge--neutral';
+        twoDayElements.badge.className = 'badge badge--neutral';
+        oneDayElements.badge.textContent = '—';
+        twoDayElements.badge.textContent = '—';
+        
+        oneDayElements.total.className = 'total-bar total-bar--neutral';
+        twoDayElements.total.className = 'total-bar total-bar--neutral';
+        
+        oneDayElements.deltaValue.className = 'kv-row__value';
+        twoDayElements.deltaValue.className = 'kv-row__value';
+        
+        return;
+      }
+
+      const buyConsideration = buyPrice * quantity;
+
+      let oneDayBuyRate = RATES.ONE_DAY_HIGH;
+      let oneDaySellRate = RATES.ONE_DAY_LOW;
+      
+      if (sellPrice > 0) {
+        const sellConsideration = sellPrice * quantity;
+        const sellIsHigher = sellConsideration > buyConsideration;
+        oneDayBuyRate = sellIsHigher ? RATES.ONE_DAY_LOW : RATES.ONE_DAY_HIGH;
+        oneDaySellRate = sellIsHigher ? RATES.ONE_DAY_HIGH : RATES.ONE_DAY_LOW;
+      }
+
+      oneDayElements.rates.textContent = `Buy ${oneDayBuyRate.toFixed(4)}% • Sell ${oneDaySellRate.toFixed(4)}%`;
+      twoDayElements.rates.textContent = `Buy ${RATES.TWO_DAY.toFixed(4)}% • Sell ${RATES.TWO_DAY.toFixed(4)}%`;
+
+      const oneDayBreakeven = calculateOneDayBreakeven(buyConsideration, quantity);
+      oneDayElements.breakeven.textContent = isFinite(oneDayBreakeven) ? formatMoney(oneDayBreakeven) : '—';
+      
+      const twoDayBreakeven = (buyConsideration * (1 + RATES.TWO_DAY / 100)) / (1 - RATES.TWO_DAY / 100);
+      twoDayElements.breakeven.textContent = formatMoney(twoDayBreakeven / quantity);
+
+      oneDayElements.buyAmount.textContent = formatMoney(buyConsideration);
+      twoDayElements.buyAmount.textContent = formatMoney(buyConsideration);
+
+      if (sellPrice > 0) {
+        const sellConsideration = sellPrice * quantity;
+        const difference = sellConsideration - buyConsideration;
+
+        oneDayElements.sellAmount.textContent = formatMoney(sellConsideration);
+        twoDayElements.sellAmount.textContent = formatMoney(sellConsideration);
+        
+        updateProfitLoss(oneDayElements.deltaLabel, oneDayElements.deltaValue, difference);
+        updateProfitLoss(twoDayElements.deltaLabel, twoDayElements.deltaValue, difference);
+
+        const oneDayBuyFees = buyConsideration * (oneDayBuyRate / 100);
+        const oneDaySellFees = sellConsideration * (oneDaySellRate / 100);
+        const oneDayTotalFees = oneDayBuyFees + oneDaySellFees;
+        const oneDayNetAmount = sellConsideration - oneDayTotalFees;
+        const oneDayProfit = oneDayNetAmount - buyConsideration;
+        const oneDayProfitPerShare = (sellPrice * (1 - oneDaySellRate / 100)) - (buyPrice * (1 + oneDayBuyRate / 100));
+
+        oneDayElements.fees.textContent = `- ${formatMoney(oneDayTotalFees)}`;
+        oneDayElements.netAmount.textContent = formatMoney(oneDayNetAmount);
+        oneDayElements.totalValue.textContent = formatMoney(oneDayProfit);
+        oneDayElements.total.className = `total-bar total-bar--${oneDayProfit > 0 ? 'positive' : oneDayProfit < 0 ? 'negative' : 'neutral'}`;
+
+        const oneDayLabel = oneDayProfitPerShare > 0 ? 'Profit' : oneDayProfitPerShare < 0 ? 'Loss' : 'Break-even';
+        oneDayElements.badge.textContent = `${oneDayLabel} Rs. ${formatMoney(Math.abs(oneDayProfitPerShare))} (@ ${sellPrice.toFixed(2)})`;
+        oneDayElements.badge.className = `badge badge--${oneDayProfitPerShare > 0 ? 'positive' : oneDayProfitPerShare < 0 ? 'negative' : 'neutral'}`;
+
+        const twoDayBuyFees = buyConsideration * (RATES.TWO_DAY / 100);
+        const twoDaySellFees = sellConsideration * (RATES.TWO_DAY / 100);
+        const twoDayTotalFees = twoDayBuyFees + twoDaySellFees;
+        const twoDayNetAmount = sellConsideration - twoDayTotalFees;
+        const twoDayProfit = twoDayNetAmount - buyConsideration;
+        const twoDayProfitPerShare = (sellPrice * (1 - RATES.TWO_DAY / 100)) - (buyPrice * (1 + RATES.TWO_DAY / 100));
+
+        twoDayElements.fees.textContent = `- ${formatMoney(twoDayTotalFees)}`;
+        twoDayElements.netAmount.textContent = formatMoney(twoDayNetAmount);
+        twoDayElements.totalValue.textContent = formatMoney(twoDayProfit);
+        twoDayElements.total.className = `total-bar total-bar--${twoDayProfit > 0 ? 'positive' : twoDayProfit < 0 ? 'negative' : 'neutral'}`;
+
+        const twoDayLabel = twoDayProfitPerShare > 0 ? 'Profit' : twoDayProfitPerShare < 0 ? 'Loss' : 'Break-even';
+        twoDayElements.badge.textContent = `${twoDayLabel} Rs. ${formatMoney(Math.abs(twoDayProfitPerShare))} (@ ${sellPrice.toFixed(2)})`;
+        twoDayElements.badge.className = `badge badge--${twoDayProfitPerShare > 0 ? 'positive' : twoDayProfitPerShare < 0 ? 'negative' : 'neutral'}`;
+
+      } else {
+        [oneDayElements.sellAmount, oneDayElements.deltaLabel, oneDayElements.deltaValue, 
+         oneDayElements.fees, oneDayElements.netAmount, oneDayElements.totalValue,
+         twoDayElements.sellAmount, twoDayElements.deltaLabel, twoDayElements.deltaValue,
+         twoDayElements.fees, twoDayElements.netAmount, twoDayElements.totalValue].forEach(el => {
+          if (el) el.textContent = '—';
+        });
+        
+        oneDayElements.deltaValue.className = 'kv-row__value';
+        twoDayElements.deltaValue.className = 'kv-row__value';
+        oneDayElements.total.className = 'total-bar total-bar--neutral';
+        twoDayElements.total.className = 'total-bar total-bar--neutral';
+        oneDayElements.badge.textContent = '—';
+        oneDayElements.badge.className = 'badge badge--neutral';
+        twoDayElements.badge.textContent = '—';
+        twoDayElements.badge.className = 'badge badge--neutral';
+      }
+    };
+
+    ['input', 'change', 'keyup'].forEach(eventType => {
+      buyPxInput.addEventListener(eventType, calculate, {passive: true});
+      sellPxInput.addEventListener(eventType, calculate, {passive: true});
+      qtyInput.addEventListener(eventType, () => {
+        formatQuantity();
+        calculate();
+      }, {passive: true});
+    });
+
+    calculate();
+  </script>
+</body>
+</html>
